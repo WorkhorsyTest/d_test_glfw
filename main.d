@@ -245,40 +245,133 @@ extern (C) void error_callback(int error, const(char)* description) nothrow {
 	}
 }
 
+// helper to check and display for shader compiler errors
+bool check_shader_compile_status(GLuint obj) {
+    GLint status;
+    glGetShaderiv(obj, GL_COMPILE_STATUS, &status);
+    if(status == GL_FALSE) {
+        GLint length;
+        glGetShaderiv(obj, GL_INFO_LOG_LENGTH, &length);
+//        vector<char> log(length);
+//        glGetShaderInfoLog(obj, length, &length, &log[0]);
+//        std::cerr << &log[0];
+        return false;
+    }
+    return true;
+}
+
+// helper to check and display for shader linker error
+bool check_program_link_status(GLuint obj) {
+    GLint status;
+    glGetProgramiv(obj, GL_LINK_STATUS, &status);
+    if(status == GL_FALSE) {
+        GLint length;
+        glGetProgramiv(obj, GL_INFO_LOG_LENGTH, &length);
+//        vector<char> log(length);
+//        glGetProgramInfoLog(obj, length, &length, &log[0]);
+//        std::cerr << &log[0];
+        return false;
+    }
+    return true;
+}
+
 int main() {
+	int width = 640;
+    int height = 480;
+
 	stdout.writefln("InitDerelict ..."); stdout.flush();
 	InitDerelict();
-
+/*
 	// Initialize SDL
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 		stderr.writefln("Could not initialize SDL: %s", SDL_GetError());
 		return 1;
 	}
-
+*/
 	stdout.writefln("glfwInit ..."); stdout.flush();
 	if (! glfwInit()) {
 		return 1;
 	}
+
+	// select opengl version
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
 	stdout.writefln("glfwSetErrorCallback ..."); stdout.flush();
 	glfwSetErrorCallback(&error_callback);
 
 	stdout.writefln("window ..."); stdout.flush();
 	/* Create a windowed mode window and its OpenGL context */
-	GLFWwindow* window = glfwCreateWindow(640, 480, "Hello World", null, null);
+	GLFWwindow* window = glfwCreateWindow(width, height, "03texture", null, null);
 	if (!window) {
-			glfwTerminate();
-			return 1;
+		glfwTerminate();
+		return 1;
 	}
 
 	glfwSetKeyCallback(window, &key_callback);
 
 	/* Make the window's context current */
 	glfwMakeContextCurrent(window);
+/*
+	if(glxwInit()) {
+		stderr.writefln("Failed to init GL3W"); stderr.flush();
+		glfwDestroyWindow(window);
+		glfwTerminate();
+		return 1;
+	}
+*/
+
+	// shader source code
+	string vertex_source =
+	q{
+		#version 330
+		layout(location = 0) in vec4 vposition;
+		layout(location = 1) in vec2 vtexcoord;
+		out vec2 ftexcoord;
+		void main() {
+		ftexcoord = vtexcoord;
+			gl_Position = vposition;
+		}
+	};
+
+	string fragment_source =
+	q{
+		#version 330
+		uniform sampler2D tex; // texture uniform
+		in vec2 ftexcoord;
+		layout(location = 0) out vec4 FragColor;
+		void main() {
+		   FragColor = texture(tex, ftexcoord);
+		}
+	};
+
+	// program and shader handles
+    GLuint shader_program, vertex_shader, fragment_shader;
+
+	// we need these to properly pass the strings
+    char* source;
+    int length;
+
+	stdout.writefln("FIXME: Fails on glCreateShader ..."); stdout.flush();
+	stdout.writefln("glCreateShader ..."); stdout.flush();
+	// create and compiler vertex shader
+    vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+    source = cast(char*)vertex_source;
+    length = cast(int) vertex_source.length;
+	stdout.writefln("glShaderSource ..."); stdout.flush();
+    glShaderSource(vertex_shader, 1, &source, &length);
+	stdout.writefln("glCompileShader ..."); stdout.flush();
+    glCompileShader(vertex_shader);
+    if(! check_shader_compile_status(vertex_shader)) {
+        glfwDestroyWindow(window);
+        glfwTerminate();
+        return 1;
+    }
 
 	/* Loop until the user closes the window */
 	while (! glfwWindowShouldClose(window)) {
-			//stdout.writefln("loop ..."); stdout.flush();
+			stdout.writefln("loop ..."); stdout.flush();
 			/* Render here */
 /*
 			glClearColor( 1.0f, 0.0f, 0.0f, 0.0f );
