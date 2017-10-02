@@ -16,10 +16,15 @@ import derelict.glfw3.glfw3;
 instead of this glBegin, glEnd crap do like this:
 https://github.com/progschj/OpenGL-Examples/blob/master/03texture.cpp
 or:
-https://github.com/WorkhorsyTest/glfw_texture/blob/master/glwf_version/main.cpp 
+https://github.com/WorkhorsyTest/glfw_texture/blob/master/glwf_version/main.cpp
 */
 
 void InitDerelict() {
+	import std.file : chdir;
+
+	// Change to the directory with the Windows libraries
+	chdir("lib/windows/x86_64");
+
 	string[] errors;
 
 	try {
@@ -95,6 +100,8 @@ void InitDerelict() {
 	} catch (Throwable) {
 		errors ~= "Failed to find the library GLFW3.";
 	}
+
+	chdir("../../..");
 
 	foreach (error ; errors) {
 		stderr.writeln(error);
@@ -273,6 +280,7 @@ int main() {
 	while (! glfwWindowShouldClose(window)) {
 			//stdout.writefln("loop ..."); stdout.flush();
 			/* Render here */
+/*
 			glClearColor( 1.0f, 0.0f, 0.0f, 0.0f );
 			glClear(GL_COLOR_BUFFER_BIT);
 
@@ -321,7 +329,7 @@ int main() {
 	     glEnd();
 	     glPopMatrix();
 	     glDisable(GL_TEXTURE_2D); //Disable the texture
-
+*/
 			/* Swap front and back buffers */
 			glfwSwapBuffers(window);
 
