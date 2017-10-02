@@ -212,11 +212,23 @@ void render() {
 }
 */
 
+
+
+extern (C) void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) nothrow {
+	try {
+		stderr.writefln("key:%s, scancode:%s, action:%s, mods:%s", key, scancode, action, mods); stderr.flush();
+	} catch (Throwable) {
+	}
+
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+		glfwSetWindowShouldClose(window, true);
+	}
+}
+
 extern (C) void error_callback(int error, const(char)* description) nothrow {
 	try {
 		stderr.writefln("error: %s", description); stderr.flush();
 	} catch (Throwable) {
-		
 	}
 }
 
@@ -230,13 +242,13 @@ int main() {
 		return 1;
 	}
 
-	stdout.writefln("glfwSetErrorCallback ..."); stdout.flush();
-	glfwSetErrorCallback(&error_callback);
-
 	stdout.writefln("glfwInit ..."); stdout.flush();
 	if (! glfwInit()) {
 		return 1;
 	}
+
+	stdout.writefln("glfwSetErrorCallback ..."); stdout.flush();
+	glfwSetErrorCallback(&error_callback);
 
 	stdout.writefln("window ..."); stdout.flush();
 	/* Create a windowed mode window and its OpenGL context */
@@ -245,6 +257,8 @@ int main() {
 			glfwTerminate();
 			return 1;
 	}
+
+	glfwSetKeyCallback(window, &key_callback);
 
 	/* Make the window's context current */
 	glfwMakeContextCurrent(window);
