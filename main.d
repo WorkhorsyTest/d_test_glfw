@@ -224,6 +224,12 @@ int main() {
 	stdout.writefln("InitDerelict ..."); stdout.flush();
 	InitDerelict();
 
+	// Initialize SDL
+	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+		stderr.writefln("Could not initialize SDL: %s", SDL_GetError());
+		return 1;
+	}
+
 	stdout.writefln("glfwSetErrorCallback ..."); stdout.flush();
 	glfwSetErrorCallback(&error_callback);
 

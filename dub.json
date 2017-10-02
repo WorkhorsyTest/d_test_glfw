@@ -4,7 +4,7 @@
 	"authors": [
 		"Matthew Brennan Jones <matthew.brennan.jones@gmail.com>",
 	],
-	"homepage": "https://github.com/WorkhorsyTest/d_sdl2_opengl",
+	"homepage": "https://github.com/workhorsy/d_test_glfw",
 	"copyright": "Copyright (c) 2017 Matthew Brennan Jones",
 	"license": "MIT",
 	"targetType": "executable",
