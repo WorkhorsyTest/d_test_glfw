@@ -12,6 +12,12 @@ import derelict.sdl2.ttf;
 import derelict.opengl3.gl3;
 import derelict.glfw3.glfw3;
 
+/*
+instead of this glBegin, glEnd crap do like this:
+https://github.com/progschj/OpenGL-Examples/blob/master/03texture.cpp
+or:
+https://github.com/WorkhorsyTest/glfw_texture/blob/master/glwf_version/main.cpp 
+*/
 
 void InitDerelict() {
 	string[] errors;
@@ -264,9 +270,57 @@ int main() {
 	glfwMakeContextCurrent(window);
 
 	/* Loop until the user closes the window */
-	while (!glfwWindowShouldClose(window)) {
+	while (! glfwWindowShouldClose(window)) {
+			//stdout.writefln("loop ..."); stdout.flush();
 			/* Render here */
+			glClearColor( 1.0f, 0.0f, 0.0f, 0.0f );
 			glClear(GL_COLOR_BUFFER_BIT);
+
+			glMatrixMode(GL_MODELVIEW); //Switch to the drawing perspective
+	   glLoadIdentity(); //Reset the drawing perspective
+	     glTranslatef(0.0f,0.0f,-35.0f); //Translate whole scene to -ve z-axis by -35 unit
+
+	     GLuint text2D;
+	     text2D = LoadTexture("cicb.tga"); //loading image for texture
+
+	     glEnable(GL_TEXTURE_2D); //Enable texture
+	     glBindTexture(GL_TEXTURE_2D,text2D);//Binding texture
+	     glPushMatrix();
+	     glBegin(GL_POLYGON); //Begin quadrilateral coordinates
+	     glNormal3f(0.0f, 0.0f, 1.0f);//normal vector
+	   glTexCoord2f(0.0f, 0.0f); //Texture co-ordinate origin or  lower left corner
+	   glVertex3f(-10.0f,-11.0f,5.0f);
+	   glTexCoord2f(1.0f, 0.0f); //Texture co-ordinate lower right corner
+	   glVertex3f(10.0f,-11.0f,5.0f);
+	   glTexCoord2f(1.0f, 1.0f);//Texture co-ordinate top right corner
+	   glVertex3f(10.0f,-1.0f,-15.0f);
+	   glTexCoord2f(0.0f, 1.0f);//Texture co-ordinate top left corner
+	   glVertex3f(-10.0f,-1.0f,-15.0f);
+	   glEnd(); //End quadrilateral coordinates
+
+	   glPopMatrix();
+
+	   glDisable(GL_TEXTURE_2D);
+
+
+
+	     glEnable(GL_TEXTURE_2D);
+	     glBindTexture(GL_TEXTURE_2D,text2D);
+	     glPushMatrix();
+	     glBegin(GL_POLYGON);
+	     glNormal3f(0.0f, 0.0f, 1.0f);
+	   	glTexCoord2f(0.0f, 0.0f);//Texture co-ordinate origin or lower left corner
+	     glVertex3f(-10.0f,-1.0f,-15.0f);
+	     glTexCoord2f(10.0f, 0.0f); //Texture co-ordinate for repeating image ten times form
+	     //origin to lower right corner
+	     glVertex3f(10.0f,-1.0f,-15.0f);
+	     glTexCoord2f(10.0f, 10.0f);//repeat texture ten times form lower to top right corner.
+	     glVertex3f(10.0f,15.0f,-15.0f);
+	     glTexCoord2f(0.0f, 10.0f);//repeat texture ten time form top right to top left corner.
+	     glVertex3f(-10.0f,15.0f,-15.0f);
+	     glEnd();
+	     glPopMatrix();
+	     glDisable(GL_TEXTURE_2D); //Disable the texture
 
 			/* Swap front and back buffers */
 			glfwSwapBuffers(window);
