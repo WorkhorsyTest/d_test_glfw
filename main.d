@@ -13,6 +13,8 @@ import derelict.sdl2.ttf;
 import derelict.opengl3.gl3;
 import derelict.glfw3.glfw3;
 
+import shader;
+
 /*
 instead of this glBegin, glEnd crap do like this:
 https://github.com/progschj/OpenGL-Examples/blob/master/03texture.cpp
@@ -279,10 +281,9 @@ bool check_program_link_status(GLuint obj) {
     return true;
 }
 
-int main() {
-	int width = 640;
-    int height = 480;
+const GLuint WIDTH = 1208, HEIGHT = 800;
 
+int main() {
 	stdout.writefln("InitDerelict ..."); stdout.flush();
 	InitDerelict();
 /*
@@ -310,7 +311,7 @@ int main() {
 
 	stdout.writefln("window ..."); stdout.flush();
 	/* Create a windowed mode window and its OpenGL context */
-	GLFWwindow* window = glfwCreateWindow(width, height, "03texture", null, null);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "03texture", null, null);
 	if (! window) {
 		glfwTerminate();
 		return 1;
@@ -321,6 +322,7 @@ int main() {
 	/* Make the window's context current */
 	glfwMakeContextCurrent(window);
 
+
 	// Reload to get new OpenGL functions
 	DerelictGL3.reload();
 
@@ -328,6 +330,105 @@ int main() {
 	stdout.writefln("Renderer: %s",   to!string(glGetString(GL_RENDERER)));
 	stdout.writefln("Version:  %s",   to!string(glGetString(GL_VERSION)));
 	stdout.writefln("GLSL:     %s\n", to!string(glGetString(GL_SHADING_LANGUAGE_VERSION)));
+
+    // Define the viewport dimensions
+    glViewport(0, 0, WIDTH, HEIGHT);
+
+
+
+    // Build and compile our shader program
+    Shader ourShader = Shader("texture.vs", "texture.frag");
+
+
+    // Set up vertex data (and buffer(s)) and attribute pointers
+    GLfloat[] vertices = [
+        // Positions          // Colors           // Texture Coords
+         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // Top Right
+         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // Bottom Right
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // Bottom Left
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // Top Left 
+    ];
+    GLuint[] indices = [  // Note that we start from 0!
+        0, 1, 3, // First Triangle
+        1, 2, 3  // Second Triangle
+    ];
+    GLuint VBO, VAO, EBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, cast(long)vertices.sizeof, &vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, cast(long)indices.sizeof, &indices, GL_STATIC_DRAW);
+
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * GLfloat.sizeof, cast(GLvoid*)0);
+    glEnableVertexAttribArray(0);
+    // Color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * GLfloat.sizeof, cast(GLvoid*)(3 * GLfloat.sizeof));
+    glEnableVertexAttribArray(1);
+    // TexCoord attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * GLfloat.sizeof, cast(GLvoid*)(6 * GLfloat.sizeof));
+    glEnableVertexAttribArray(2);
+
+    glBindVertexArray(0); // Unbind VAO
+
+
+
+    // Load and create a texture 
+    GLuint texture1;
+    GLuint texture2;
+    // ====================
+    // Texture 1
+    // ====================
+    glGenTextures(1, &texture1);
+    glBindTexture(GL_TEXTURE_2D, texture1); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
+    // Set our texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// Set texture wrapping to GL_REPEAT
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // Set texture filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // Load, create texture and generate mipmaps
+    int width, height;
+
+    char* image = SOIL_load_image("container.jpg", &width, &height, 0, SOIL_LOAD_RGB);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    SOIL_free_image_data(image);
+    glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture when done, so we won't accidentily mess up our texture.
+
+    // ===================
+    // Texture 2
+    // ===================
+    glGenTextures(1, &texture2);
+    glBindTexture(GL_TEXTURE_2D, texture2);
+    // Set our texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // Set texture filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // Load, create texture and generate mipmaps
+    image = SOIL_load_image("awesomeface.png", &width, &height, 0, SOIL_LOAD_RGB);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    SOIL_free_image_data(image);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+
+
+
+
+
+
+
+
 
 	// shader source code
 	string vertex_source =
