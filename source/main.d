@@ -250,7 +250,7 @@ extern (C) void error_callback(int error, const(char)* description) nothrow {
 	} catch (Throwable) {
 	}
 }
-
+/*
 // helper to check and display for shader compiler errors
 bool check_shader_compile_status(GLuint obj) {
     GLint status;
@@ -280,7 +280,7 @@ bool check_program_link_status(GLuint obj) {
     }
     return true;
 }
-
+*/
 const GLuint WIDTH = 1208, HEIGHT = 800;
 
 int main() {
@@ -298,30 +298,27 @@ int main() {
 		return 1;
 	}
 
-	// select opengl version
-	glfwWindowHint(GLFW_SAMPLES, 4);
-	glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	// Set all the required options for GLFW
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-	stdout.writefln("glfwSetErrorCallback ..."); stdout.flush();
-	glfwSetErrorCallback(&error_callback);
+	//stdout.writefln("glfwSetErrorCallback ..."); stdout.flush();
+	//glfwSetErrorCallback(&error_callback);
 
 	stdout.writefln("window ..."); stdout.flush();
 	/* Create a windowed mode window and its OpenGL context */
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "03texture", null, null);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "OpenGL Texture Example", null, null);
 	if (! window) {
 		glfwTerminate();
 		return 1;
 	}
 
-	glfwSetKeyCallback(window, &key_callback);
-
 	/* Make the window's context current */
 	glfwMakeContextCurrent(window);
 
+	glfwSetKeyCallback(window, &key_callback);
 
 	// Reload to get new OpenGL functions
 	DerelictGL3.reload();
@@ -334,8 +331,6 @@ int main() {
     // Define the viewport dimensions
     glViewport(0, 0, WIDTH, HEIGHT);
 
-
-
     // Build and compile our shader program
     Shader ourShader = Shader("texture.vs", "texture.frag");
 
@@ -346,7 +341,7 @@ int main() {
          0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // Top Right
          0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // Bottom Right
         -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // Bottom Left
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // Top Left 
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // Top Left
     ];
     GLuint[] indices = [  // Note that we start from 0!
         0, 1, 3, // First Triangle
@@ -378,13 +373,10 @@ int main() {
     glBindVertexArray(0); // Unbind VAO
 
 
-
-    // Load and create a texture 
-    GLuint texture1;
-    GLuint texture2;
     // ====================
     // Texture 1
     // ====================
+    GLuint texture1;
     glGenTextures(1, &texture1);
     glBindTexture(GL_TEXTURE_2D, texture1); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
     // Set our texture parameters
@@ -394,18 +386,18 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // Load, create texture and generate mipmaps
-    int width, height;
-
-    char* image = SOIL_load_image("container.jpg", &width, &height, 0, SOIL_LOAD_RGB);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	SDL_Surface* surface1 = IMG_Load("container.jpg");
+	surface1 = EnsureSurfaceRGBA8888(surface1);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface1.w, surface1.h, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, surface1.pixels);
     glGenerateMipmap(GL_TEXTURE_2D);
-    SOIL_free_image_data(image);
+	SDL_FreeSurface(surface1);
+	surface1 = null;
     glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture when done, so we won't accidentily mess up our texture.
 
     // ===================
     // Texture 2
     // ===================
+    GLuint texture2;
     glGenTextures(1, &texture2);
     glBindTexture(GL_TEXTURE_2D, texture2);
     // Set our texture parameters
@@ -415,10 +407,12 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // Load, create texture and generate mipmaps
-    image = SOIL_load_image("awesomeface.png", &width, &height, 0, SOIL_LOAD_RGB);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	SDL_Surface* surface2 = IMG_Load("awesomeface.png");
+	surface2 = EnsureSurfaceRGBA8888(surface2);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface2.w, surface2.h, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, surface2.pixels);
     glGenerateMipmap(GL_TEXTURE_2D);
-    SOIL_free_image_data(image);
+	SDL_FreeSurface(surface2);
+	surface1 = null;
     glBindTexture(GL_TEXTURE_2D, 0);
 
 
@@ -429,7 +423,7 @@ int main() {
 
 
 
-
+/*
 	// shader source code
 	string vertex_source =
 	q{
@@ -475,9 +469,37 @@ int main() {
         glfwTerminate();
         return 1;
     }
-
+*/
 	/* Loop until the user closes the window */
 	while (! glfwWindowShouldClose(window)) {
+		// Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
+        glfwPollEvents();
+
+        // Render
+        // Clear the colorbuffer
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+
+        // Bind Textures using texture units
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture1);
+        glUniform1i(glGetUniformLocation(ourShader.Program, "ourTexture1"), 0);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
+        glUniform1i(glGetUniformLocation(ourShader.Program, "ourTexture2"), 1);
+
+        // Activate shader
+        ourShader.Use();
+
+        // Draw container
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, null);
+        glBindVertexArray(0);
+
+        // Swap the screen buffers
+        glfwSwapBuffers(window);
+
 			//stdout.writefln("loop ..."); stdout.flush();
 			/* Render here */
 /*
@@ -531,13 +553,18 @@ int main() {
 	     glDisable(GL_TEXTURE_2D); //Disable the texture
 */
 			/* Swap front and back buffers */
-			glfwSwapBuffers(window);
+//			glfwSwapBuffers(window);
 
 			/* Poll for and process events */
-			glfwPollEvents();
+//			glfwPollEvents();
 	}
 
-	glfwTerminate();
+	// Properly de-allocate all resources once they've outlived their purpose
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+    // Terminate GLFW, clearing any resources allocated by GLFW.
+    glfwTerminate();
 
 /*
 	// Initialize SDL

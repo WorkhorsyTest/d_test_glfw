@@ -15,6 +15,7 @@ public:
     GLuint Program;
     // Constructor generates the shader on the fly
     this(const GLchar* vertexPath, const GLchar* fragmentPath, const GLchar* geometryPath = null) {
+/*
         // 1. Retrieve the vertex/fragment source code from filePath
         string vertexCode;
         string fragmentCode;
@@ -33,13 +34,13 @@ public:
             stringstream vShaderStream, fShaderStream;
             // Read file's buffer contents into streams
             vShaderStream << vShaderFile.rdbuf();
-            fShaderStream << fShaderFile.rdbuf();		
+            fShaderStream << fShaderFile.rdbuf();
             // close file handlers
             vShaderFile.close();
             fShaderFile.close();
             // Convert stream into string
             vertexCode = vShaderStream.str();
-            fragmentCode = fShaderStream.str();			
+            fragmentCode = fShaderStream.str();
 			// If geometry shader path is present, also load a geometry shader
 			if(geometryPath != null)
 			{
@@ -90,13 +91,18 @@ public:
         glDeleteShader(fragment);
 		if(geometryPath != null)
 			glDeleteShader(geometry);
-
+*/
     }
     // Uses the current shader
-    void Use() { glUseProgram(this.Program); }
+    void Use() {
+/*
+	glUseProgram(this.Program);
+*/
+	}
 
 private:
     void checkCompileErrors(GLuint shader, string type) {
+/*
 		GLint success;
 		GLchar[1024] infoLog;
 		if(type != "PROGRAM") {
@@ -112,7 +118,6 @@ private:
                 cout << "| ERROR.PROGRAM-LINKING-ERROR of type: " << type << "|\n" << infoLog << "\n| -- --------------------------------------------------- -- |" << endl;
 			}
 		}
+*/
 	}
-};
-
-
+}
