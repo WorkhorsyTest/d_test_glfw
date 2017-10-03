@@ -332,7 +332,7 @@ int main() {
     glViewport(0, 0, WIDTH, HEIGHT);
 
     // Build and compile our shader program
-    Shader ourShader = Shader("texture.vs", "texture.frag");
+    Shader ourShader = Shader("source/texture.vs", "source/texture.frag");
 
 
     // Set up vertex data (and buffer(s)) and attribute pointers
