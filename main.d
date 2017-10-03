@@ -3,6 +3,7 @@
 import std.stdio : stdout, stderr;
 import std.traits : isSomeString;
 
+import std.conv : to;
 import derelict.sdl2.sdl;
 import derelict.sdl2.image;
 import derelict.sdl2.gfx.gfx;
@@ -20,10 +21,13 @@ https://github.com/WorkhorsyTest/glfw_texture/blob/master/glwf_version/main.cpp
 */
 
 void InitDerelict() {
-	import std.file : chdir;
+	import std.file : chdir, getcwd;
 
 	// Change to the directory with the Windows libraries
-	chdir("lib/windows/x86_64");
+	string original_dir = getcwd();
+	version (Windows) {
+		chdir("lib/windows/x86_64");
+	}
 
 	string[] errors;
 
@@ -101,7 +105,7 @@ void InitDerelict() {
 		errors ~= "Failed to find the library GLFW3.";
 	}
 
-	chdir("../../..");
+	chdir(original_dir);
 
 	foreach (error ; errors) {
 		stderr.writeln(error);
@@ -294,9 +298,12 @@ int main() {
 	}
 
 	// select opengl version
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_SAMPLES, 4);
+	glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
 	stdout.writefln("glfwSetErrorCallback ..."); stdout.flush();
 	glfwSetErrorCallback(&error_callback);
@@ -304,7 +311,7 @@ int main() {
 	stdout.writefln("window ..."); stdout.flush();
 	/* Create a windowed mode window and its OpenGL context */
 	GLFWwindow* window = glfwCreateWindow(width, height, "03texture", null, null);
-	if (!window) {
+	if (! window) {
 		glfwTerminate();
 		return 1;
 	}
@@ -313,14 +320,14 @@ int main() {
 
 	/* Make the window's context current */
 	glfwMakeContextCurrent(window);
-/*
-	if(glxwInit()) {
-		stderr.writefln("Failed to init GL3W"); stderr.flush();
-		glfwDestroyWindow(window);
-		glfwTerminate();
-		return 1;
-	}
-*/
+
+	// Reload to get new OpenGL functions
+	DerelictGL3.reload();
+
+	stdout.writefln("Vendor:   %s",   to!string(glGetString(GL_VENDOR)));
+	stdout.writefln("Renderer: %s",   to!string(glGetString(GL_RENDERER)));
+	stdout.writefln("Version:  %s",   to!string(glGetString(GL_VERSION)));
+	stdout.writefln("GLSL:     %s\n", to!string(glGetString(GL_SHADING_LANGUAGE_VERSION)));
 
 	// shader source code
 	string vertex_source =
@@ -353,7 +360,6 @@ int main() {
     char* source;
     int length;
 
-	stdout.writefln("FIXME: Fails on glCreateShader ..."); stdout.flush();
 	stdout.writefln("glCreateShader ..."); stdout.flush();
 	// create and compiler vertex shader
     vertex_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -371,7 +377,7 @@ int main() {
 
 	/* Loop until the user closes the window */
 	while (! glfwWindowShouldClose(window)) {
-			stdout.writefln("loop ..."); stdout.flush();
+			//stdout.writefln("loop ..."); stdout.flush();
 			/* Render here */
 /*
 			glClearColor( 1.0f, 0.0f, 0.0f, 0.0f );
