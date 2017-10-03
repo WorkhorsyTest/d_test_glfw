@@ -73,7 +73,7 @@ public:
 private:
     void checkCompileErrors(GLuint shader, string type) {
 		GLint success;
-		GLchar[] infoLog = new GLchar[1024];
+		GLchar[1024] infoLog;
 		int len;
 		if (type != "PROGRAM") {
 			glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
