@@ -216,7 +216,7 @@ int main() {
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
 	//stdout.writefln("glfwSetErrorCallback ..."); stdout.flush();
-	//glfwSetErrorCallback(&error_callback);
+	glfwSetErrorCallback(&error_callback);
 
 	stdout.writefln("window ..."); stdout.flush();
 	/* Create a windowed mode window and its OpenGL context */
@@ -237,7 +237,7 @@ int main() {
 	stdout.writefln("Vendor:   %s",   to!string(glGetString(GL_VENDOR)));
 	stdout.writefln("Renderer: %s",   to!string(glGetString(GL_RENDERER)));
 	stdout.writefln("Version:  %s",   to!string(glGetString(GL_VERSION)));
-	stdout.writefln("GLSL:     %s\n", to!string(glGetString(GL_SHADING_LANGUAGE_VERSION)));
+	stdout.writefln("GLSL:     %s", to!string(glGetString(GL_SHADING_LANGUAGE_VERSION)));
 
     // Define the viewport dimensions
     glViewport(0, 0, WIDTH, HEIGHT);
