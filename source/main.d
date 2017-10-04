@@ -15,13 +15,6 @@ import derelict.glfw3.glfw3;
 
 import shader;
 
-/*
-instead of this glBegin, glEnd crap do like this:
-https://github.com/progschj/OpenGL-Examples/blob/master/03texture.cpp
-or:
-https://github.com/WorkhorsyTest/glfw_texture/blob/master/glwf_version/main.cpp
-*/
-
 void InitDerelict() {
 	import std.file : chdir, getcwd;
 
@@ -118,21 +111,6 @@ void InitDerelict() {
 	}
 }
 
-/*
-float width = 200, height = 200;
-float bpp = 0;
-float near = 10.0, far = 100000.0, fovy = 45.0;
-float[3] position = [0,0,-40];
-const float[9] triangle = [
-	  0,  10, 0,  // top point
-	-10, -10, 0,  // bottom left
-	 10, -10, 0   // bottom right
-];
-float rotate_degrees  = 90;
-float[3] rotate_axis = [0,1,0];
-
-SDL_Surface* screen = null;
-*/
 public char* toSZ(S)(S value)
 if(isSomeString!S) {
 	import std.string : toStringz;
@@ -195,43 +173,6 @@ SDL_Surface* LoadSurface(const string file_name) {
 
 	return surface;
 }
-/*
-void render() {
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	glLoadIdentity();
-
-	glTranslatef(position[0], position[1], position[2]);
-
-	{
-		static Uint32 last = 0;
-		static float angle = 0;
-
-		Uint32 now = SDL_GetTicks();
-		float delta = (now - last) / 1000.0f; // in seconds
-		last = now;
-
-		angle += rotate_degrees * delta;
-
-		// c modulo operator only supports ints as arguments
-		auto MOD(T)(T n, T d) { return (n - (d * cast(int) ( n / d ))); }
-		angle = MOD( angle, 360 );
-
-		glRotatef( angle, rotate_axis[0], rotate_axis[1], rotate_axis[2] );
-	}
-
-	glBegin(GL_TRIANGLES);
-	for (int i=0; i<=6; i+=3) {
-		glColor3f(i==0, i==3, i==6); // adding some color
-		glVertex3fv(&triangle[i]);
-	}
-	glEnd();
-
-	SDL_GL_SwapBuffers();
-}
-*/
-
-
 
 extern (C) void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) nothrow {
 	try {
@@ -250,37 +191,7 @@ extern (C) void error_callback(int error, const(char)* description) nothrow {
 	} catch (Throwable) {
 	}
 }
-/*
-// helper to check and display for shader compiler errors
-bool check_shader_compile_status(GLuint obj) {
-    GLint status;
-    glGetShaderiv(obj, GL_COMPILE_STATUS, &status);
-    if(status == GL_FALSE) {
-        GLint length;
-        glGetShaderiv(obj, GL_INFO_LOG_LENGTH, &length);
-//        vector<char> log(length);
-//        glGetShaderInfoLog(obj, length, &length, &log[0]);
-//        std::cerr << &log[0];
-        return false;
-    }
-    return true;
-}
 
-// helper to check and display for shader linker error
-bool check_program_link_status(GLuint obj) {
-    GLint status;
-    glGetProgramiv(obj, GL_LINK_STATUS, &status);
-    if(status == GL_FALSE) {
-        GLint length;
-        glGetProgramiv(obj, GL_INFO_LOG_LENGTH, &length);
-//        vector<char> log(length);
-//        glGetProgramInfoLog(obj, length, &length, &log[0]);
-//        std::cerr << &log[0];
-        return false;
-    }
-    return true;
-}
-*/
 const GLuint WIDTH = 1208, HEIGHT = 800;
 
 int main() {
@@ -416,60 +327,6 @@ int main() {
     glBindTexture(GL_TEXTURE_2D, 0);
 
 
-
-
-
-
-
-
-
-/*
-	// shader source code
-	string vertex_source =
-	q{
-		#version 330
-		layout(location = 0) in vec4 vposition;
-		layout(location = 1) in vec2 vtexcoord;
-		out vec2 ftexcoord;
-		void main() {
-		ftexcoord = vtexcoord;
-			gl_Position = vposition;
-		}
-	};
-
-	string fragment_source =
-	q{
-		#version 330
-		uniform sampler2D tex; // texture uniform
-		in vec2 ftexcoord;
-		layout(location = 0) out vec4 FragColor;
-		void main() {
-		   FragColor = texture(tex, ftexcoord);
-		}
-	};
-
-	// program and shader handles
-    GLuint shader_program, vertex_shader, fragment_shader;
-
-	// we need these to properly pass the strings
-    char* source;
-    int length;
-
-	stdout.writefln("glCreateShader ..."); stdout.flush();
-	// create and compiler vertex shader
-    vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    source = cast(char*)vertex_source;
-    length = cast(int) vertex_source.length;
-	stdout.writefln("glShaderSource ..."); stdout.flush();
-    glShaderSource(vertex_shader, 1, &source, &length);
-	stdout.writefln("glCompileShader ..."); stdout.flush();
-    glCompileShader(vertex_shader);
-    if(! check_shader_compile_status(vertex_shader)) {
-        glfwDestroyWindow(window);
-        glfwTerminate();
-        return 1;
-    }
-*/
 	/* Loop until the user closes the window */
 	while (! glfwWindowShouldClose(window)) {
 		// Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
@@ -499,64 +356,6 @@ int main() {
 
         // Swap the screen buffers
         glfwSwapBuffers(window);
-
-			//stdout.writefln("loop ..."); stdout.flush();
-			/* Render here */
-/*
-			glClearColor( 1.0f, 0.0f, 0.0f, 0.0f );
-			glClear(GL_COLOR_BUFFER_BIT);
-
-			glMatrixMode(GL_MODELVIEW); //Switch to the drawing perspective
-	   glLoadIdentity(); //Reset the drawing perspective
-	     glTranslatef(0.0f,0.0f,-35.0f); //Translate whole scene to -ve z-axis by -35 unit
-
-	     GLuint text2D;
-	     text2D = LoadTexture("cicb.tga"); //loading image for texture
-
-	     glEnable(GL_TEXTURE_2D); //Enable texture
-	     glBindTexture(GL_TEXTURE_2D,text2D);//Binding texture
-	     glPushMatrix();
-	     glBegin(GL_POLYGON); //Begin quadrilateral coordinates
-	     glNormal3f(0.0f, 0.0f, 1.0f);//normal vector
-	   glTexCoord2f(0.0f, 0.0f); //Texture co-ordinate origin or  lower left corner
-	   glVertex3f(-10.0f,-11.0f,5.0f);
-	   glTexCoord2f(1.0f, 0.0f); //Texture co-ordinate lower right corner
-	   glVertex3f(10.0f,-11.0f,5.0f);
-	   glTexCoord2f(1.0f, 1.0f);//Texture co-ordinate top right corner
-	   glVertex3f(10.0f,-1.0f,-15.0f);
-	   glTexCoord2f(0.0f, 1.0f);//Texture co-ordinate top left corner
-	   glVertex3f(-10.0f,-1.0f,-15.0f);
-	   glEnd(); //End quadrilateral coordinates
-
-	   glPopMatrix();
-
-	   glDisable(GL_TEXTURE_2D);
-
-
-
-	     glEnable(GL_TEXTURE_2D);
-	     glBindTexture(GL_TEXTURE_2D,text2D);
-	     glPushMatrix();
-	     glBegin(GL_POLYGON);
-	     glNormal3f(0.0f, 0.0f, 1.0f);
-	   	glTexCoord2f(0.0f, 0.0f);//Texture co-ordinate origin or lower left corner
-	     glVertex3f(-10.0f,-1.0f,-15.0f);
-	     glTexCoord2f(10.0f, 0.0f); //Texture co-ordinate for repeating image ten times form
-	     //origin to lower right corner
-	     glVertex3f(10.0f,-1.0f,-15.0f);
-	     glTexCoord2f(10.0f, 10.0f);//repeat texture ten times form lower to top right corner.
-	     glVertex3f(10.0f,15.0f,-15.0f);
-	     glTexCoord2f(0.0f, 10.0f);//repeat texture ten time form top right to top left corner.
-	     glVertex3f(-10.0f,15.0f,-15.0f);
-	     glEnd();
-	     glPopMatrix();
-	     glDisable(GL_TEXTURE_2D); //Disable the texture
-*/
-			/* Swap front and back buffers */
-//			glfwSwapBuffers(window);
-
-			/* Poll for and process events */
-//			glfwPollEvents();
 	}
 
 	// Properly de-allocate all resources once they've outlived their purpose
@@ -566,68 +365,5 @@ int main() {
     // Terminate GLFW, clearing any resources allocated by GLFW.
     glfwTerminate();
 
-/*
-	// Initialize SDL
-	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-		fprintf(stderr, "Could not initialize SDL: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1 );
-
-	screen = SDL_SetVideoMode(
-		width, height, bpp,
-		SDL_ANYFORMAT | SDL_OPENGL );
-
-	glViewport(0, 0, width, height);
-
-	glPolygonMode( GL_FRONT, GL_FILL );
-	glPolygonMode( GL_BACK,  GL_LINE );
-
-	glMatrixMode(GL_PROJECTION);
-	gluPerspective(fovy,width/height,near,far);
-
-	glMatrixMode(GL_MODELVIEW);
-
-	// ===================
-	// Texture 2
-	// ===================
-	GLuint texture2;
-	glGenTextures(1, &texture2);
-	glBindTexture(GL_TEXTURE_2D, texture2);
-	// Set our texture parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	// Set texture filtering
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	// Load, create texture and generate mipmaps
-	SDL_Surface* surface = null;
-	try {
-		//LoadSurface("awesomeface.png");
-	} catch (Throwable err) {
-		//std::exception_ptr err = std::current_exception();
-		stderr.writefln("!!! %s", err);
-		return 1;
-	}
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface.w, surface.h, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, surface.pixels);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	SDL_FreeSurface(surface);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-
-	while (true) {
-		SDL_Event event;
-		while (SDL_PollEvent(&event)) {
-			switch (event.type) {
-				case SDL_QUIT:
-					SDL_Quit();
-					break;
-			}
-		}
-
-		render();
-	}
-*/
 	return 0;
 }
