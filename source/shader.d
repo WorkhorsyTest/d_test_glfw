@@ -10,6 +10,7 @@ public:
     // Constructor generates the shader on the fly
     this(string vertexPath, string fragmentPath, string geometryPath = null) {
 		import std.file : readText;
+		import std.string : toStringz;
 
         // 1. Retrieve the vertex/fragment source code from filePath
         string vertexCode = null;
@@ -25,9 +26,12 @@ public:
 			}
         } catch (Throwable) {
             stderr.writefln("ERROR.SHADER.FILE_NOT_SUCCESFULLY_READ");
+			return;
         }
-        const GLchar* vShaderCode = cast(GLchar*) &vertexCode;
-        const GLchar* fShaderCode = cast(GLchar*) &fragmentCode;
+
+        auto vShaderCode = vertexCode.toStringz;
+        auto fShaderCode = fragmentCode.toStringz;
+
         // 2. Compile shaders
         GLuint vertex, fragment;
         //GLint success;
@@ -45,7 +49,7 @@ public:
 		// If geometry shader is given, compile geometry shader
 		GLuint geometry = 0;
 		if (geometryPath != null) {
-			const GLchar* gShaderCode = cast(GLchar*) &geometryCode;
+			auto gShaderCode = geometryCode.toStringz;
 			geometry = glCreateShader(GL_GEOMETRY_SHADER);
 			glShaderSource(geometry, 1, &gShaderCode, null);
 			glCompileShader(geometry);
